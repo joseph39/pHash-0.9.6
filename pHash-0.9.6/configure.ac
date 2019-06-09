@@ -72,19 +72,17 @@ if test x"$found_jni" = x"n"; then
 	
 	if [test `ls . src | grep "jni.h"` >/dev/null 2>&1]; then
 		AC_MSG_RESULT([yes])
-		found_java="y"
 	else
 		AC_MSG_RESULT([no])
-		AC_MSG_CHECKING([if jni.h is in other system directories.])
-		jni_header=`locate jni.h|grep include/jni.h|head -n1`
-		
-		if test x"$jni_header" != "x"; then
-			AC_MSG_RESULT([yes])
+		AC_MSG_CHECKING([if jni.h is in JAVA_HOME.])
+		if test "${JAVA_HOME+set}" = set; then
+			jni_header="$JAVA_HOME/include/jni.h"
+			AC_CHECK_FILE($jni_header, [AC_MSG_RESULT([yes])], [AC_MSG_ERROR([jni.h file cannot be found under JAVA_HOME])])
 			jni_header=`dirname $jni_header`
 			jni_md_header=$jni_header"/"`uname|tr '[A-Z]' '[a-z]'`
 			CPPFLAGS="$CPPFLAGS -I $jni_header -I $jni_md_header"
 		else
-			AC_MSG_RESULT([no])
+		    AC_MSG_ERROR([JAVA_HOME is not defined.])
 		fi
 	fi
 	
@@ -122,7 +120,7 @@ fi])
 AC_DEFUN([AC_CHECK_FFMPEG],
 [
 AC_MSG_CHECKING([whether FFmpeg is present])
-AC_CHECK_LIB([avcodec], [avcodec_alloc_frame], [], [AC_MSG_ERROR([
+AC_CHECK_LIB([avcodec], [avcodec_open2], [], [AC_MSG_ERROR([
 
 *** libavcodec not found.
 You need FFmpeg. Get it at <http://ffmpeg.org/>])])
